@@ -1,0 +1,75 @@
+FROM openjdk:11
+COPY src/main/java /app/src/main/java
+COPY src/main/resources /app/src/main/resources
+COPY pom.xml /app
+WORKDIR /app
+RUN ["./mvnw", "clean", "install"]
+ENTRYPOINT ["java", "-cp", "target/stock-monitoring-1.0.jar", "com.example.StockMonitor"]
+
+
+Implementing in Scala 
+package com.example
+
+import java.util.{Properties, Timer, TimerTask}
+import scala.util.Random
+import javax.mail._
+import javax.mail.internet._
+
+object StockMonitor extends App {
+  val API_URL = "https://api.refinitiv.com"
+  val STOCK_SYMBOL = "TSX"
+  val THRESHOLD = 100.0 // example threshold
+  val EMAIL_1 = "kaushal7359@gmail.com"
+  val EMAIL_2 = "User1234@gmail.com"
+
+  val timer = new Timer()
+  timer.schedule(new CheckStockTask(), 0, 60000) // Check every minute
+
+  class CheckStockTask extends TimerTask {
+    def run(): Unit = {
+      val stockPrice = fetchStockPrice()
+      if (stockPrice > THRESHOLD) {
+        val ticketNumber = generateTicketNumber()
+        sendEmail(ticketNumber)
+      }
+    }
+
+    def fetchStockPrice(): Double = {
+      // Implement Refinitiv API call here
+      new Random().nextDouble() * 200 // Mocked price for demonstration
+    }
+
+    def generateTicketNumber(): String = {
+      val random = new Random()
+      "TSX" + "%07d".format(random.nextInt(10000000))
+    }
+
+    def sendEmail(ticketNumber: String): Unit = {
+      val subject = s"Stock Alert: Support Ticket $ticketNumber"
+      val body = s"A stock has crossed the threshold. Ticket Number: $ticketNumber"
+
+      val properties = new Properties()
+      properties.put("mail.smtp.host", "smtp.example.com")
+      properties.put("mail.smtp.port", "587")
+      properties.put("mail.smtp.auth", "true")
+      properties.put("mail.smtp.starttls.enable", "true")
+
+      val session = Session.getInstance(properties, new Authenticator() {
+        override protected def getPasswordAuthentication: PasswordAuthentication =
+          new PasswordAuthentication("username", "password")
+      })
+
+      try {
+        val message = new MimeMessage(session)
+        message.setFrom(new InternetAddress("no-reply@example.com"))
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(s"$EMAIL_1,$EMAIL_2"))
+        message.setSubject(subject)
+        message.setText(body)
+        Transport.send(message)
+        println("Email sent successfully")
+      } catch {
+        case e: MessagingException => e.printStackTrace()
+      }
+    }
+  }
+}
