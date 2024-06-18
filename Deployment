@@ -1,0 +1,47 @@
+FROM hseeberger/scala-sbt:11.0.9.1_1.4.4_2.13.4
+COPY src /app/src
+COPY build.sbt /app
+WORKDIR /app
+RUN sbt clean compile
+ENTRYPOINT ["sbt", "run"]
+
+FROM gcr.io/distroless/java
+COPY target/stock-monitoring-1.0.jar /app/stock-monitoring-1.0.jar
+WORKDIR /app
+ENTRYPOINT ["java", "-jar", "stock-monitoring-1.0.jar"]
+
+#!/bin/bash
+
+# Authenticate with Google Cloud
+gcloud auth activate-service-account --key-file=/path/to/your-service-account-key.json
+
+# Set Google Cloud project
+gcloud config set project your-project-id
+
+# Build Docker image
+docker build -t gcr.io/your-project-id/stock-monitoring:latest .
+
+# Push Docker image to Google Container Registry
+docker push gcr.io/your-project-id/stock-monitoring:latest
+
+# Deploy to Google Cloud Run
+gcloud run deploy stock-monitoring \
+  --image gcr.io/your-project-id/stock-monitoring:latest \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated
+Build and Run Java Application 
+
+cd java-app
+mvn clean install
+docker build -t stock-monitoring-java .
+docker run -it stock-monitoring-java
+
+Build and run Scala application 
+cd scala-app
+sbt clean compile
+docker build -t stock-monitoring-scala .
+docker run -it stock-monitoring-scala
+
+Deployment on GCP
+cd deploy
