@@ -1,0 +1,31 @@
+stock-monitoring/
+│
+├── java-app/
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/
+│   │   │   │   └── com/
+│   │   │   │       └── example/
+│   │   │   │           └── StockMonitor.java
+│   │   │   └── resources/
+│   │   │       └── application.properties
+│   ├── Dockerfile
+│   └── pom.xml
+│
+├── scala-app/
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── scala/
+│   │   │   │   └── com/
+│   │   │   │       └── example/
+│   │   │   │           └── StockMonitor.scala
+│   │   │   └── resources/
+│   │   │       └── application.conf
+│   ├── Dockerfile
+│   └── build.sbt
+│
+├── deploy/
+│   ├── deploy.sh
+│   └── Dockerfile
+│
+└── README.md
